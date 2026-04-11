@@ -73,12 +73,14 @@ ok "WidevineCdm in place"
 # 5 — Repack from RPM DB (reads installed files, picks up WidevineCdm)
 # =============================================================================
 info "Repacking helium-bin as helium-drm..."
-rpmrebuild \
+rpmrebuild --non-interactive --notest-install \
     --change-spec-preamble="sed \
         -e 's/^Name:.*/Name: helium-drm/' \
         -e 's/^Summary:.*/Summary: Helium browser with Widevine DRM (Widevine ${WIDEVINE_VER})/' \
         -e '/^Conflicts:/d' \
-        -e '\$a Provides: helium-bin = %{version}\\nConflicts: helium-bin'" \
+        -e '\$a Provides: helium-bin = ${INSTALLED_VER}' \
+        -e '\$a Conflicts: helium-bin'" \
+    --change-spec-files="cat - <(find ${HELIUM_DIR}/WidevineCdm -printf '%p\n')" \
     helium-bin
 
 RPM_FILE=$(find ~/rpmbuild/RPMS -name "helium-drm-*.rpm" 2>/dev/null | head -1)
