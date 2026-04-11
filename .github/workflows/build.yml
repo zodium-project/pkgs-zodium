@@ -52,38 +52,32 @@ jobs:
           retention-days: 1
 
   publish:
-    name: Publish ${{ matrix.package }}
+    name: Publish release
     runs-on: ubuntu-latest
     needs: build
     permissions:
       contents: write
 
-    strategy:
-      fail-fast: false
-      matrix:
-        package:
-          - helium-drm
-          - zodium-settings
-          - fedora-logos
-          - plasma-lookandfeel-fedora
-
     steps:
-      - name: Download artifact
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: rpms-${{ matrix.package }}
-          path: rpms
+          pattern: rpms-*
+          path: all-rpms
+          merge-multiple: true
 
-      - name: List RPMs
+      - name: List all RPMs
         run: |
-          echo "RPMs for ${{ matrix.package }}:"
-          ls -lh rpms/
+          echo "All RPMs:"
+          ls -lh all-rpms/
+          [[ "$(ls all-rpms/*.rpm 2>/dev/null | wc -l)" -gt 0 ]] \
+            || { echo "No RPMs found"; exit 1; }
 
       - name: Delete existing release and tag
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release delete "${{ matrix.package }}" \
+          gh release delete "pkgs-rpm" \
             --repo ${{ github.repository }} \
             --yes \
             --cleanup-tag \
@@ -93,13 +87,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          RPM_FILE=$(ls rpms/*.rpm | head -1)
-          VERSION=$(basename "$RPM_FILE" | sed 's/^[^-]*-//; s/\.x86_64\.rpm$//; s/\.noarch\.rpm$//')
-
-          gh release create "${{ matrix.package }}" \
+          gh release create "pkgs-rpm" \
             --repo ${{ github.repository }} \
-            --title "${{ matrix.package }}" \
+            --title "pkgs-rpm" \
             --latest=false \
-            --notes "**version:** \`${VERSION}\`
-            **built:** \`$(date -u '+%Y-%m-%d %H:%M UTC')\`" \
-            rpms/*.rpm
+            --notes "**built:** \`$(date -u '+%Y-%m-%d %H:%M UTC')\`" \
+            all-rpms/*.rpm
