@@ -15,7 +15,7 @@ trap 'rm -rf "$WORKDIR"' EXIT
 # =============================================================================
 info "Installing dependencies..."
 dnf install -y --setopt=install_weak_deps=False -q \
-    dnf-plugins-core python3 rpmrebuild
+    dnf-plugins-core dnf5-plugins python3 rpmrebuild
 
 info "Enabling imput/helium COPR..."
 dnf copr enable -y imput/helium -q
