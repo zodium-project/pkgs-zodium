@@ -1,0 +1,84 @@
+#!/bin/bash
+# =============================================================================
+#  plasma-lookandfeel-fedora/build.sh
+#  Builds an empty replacement RPM for plasma-lookandfeel-fedora.
+#  Runs inside a Fedora container.
+#  Output: /output/plasma-lookandfeel-fedora-*.rpm
+# =============================================================================
+set -euo pipefail
+
+WORKDIR="/tmp/plasma-lookandfeel-fedora-build"
+mkdir -p "$WORKDIR"
+cd "$WORKDIR"
+
+info() { echo "[•] $*"; }
+ok()   { echo "[✓] $*"; }
+die()  { echo "[✗] $*" >&2; exit 1; }
+
+# =============================================================================
+# 1 — Install build dependencies
+# =============================================================================
+info "Installing dependencies..."
+dnf install -y rpm-build --setopt=install_weak_deps=False -q
+
+# =============================================================================
+# 2 — Get version from repos (subpackage of plasma-workspace, tracks with it)
+# =============================================================================
+info "Fetching plasma-lookandfeel-fedora version..."
+VERSION=$(dnf repoquery plasma-lookandfeel-fedora 2>/dev/null \
+    | grep -v "^Updating\|^Repo\|^$" \
+    | sort -V | tail -1 \
+    | sed 's/.*-\([0-9][^-]*\)-[^-]*\.[^.]*$/\1/')
+
+[[ -n "$VERSION" ]] || die "Could not determine plasma-lookandfeel-fedora version"
+ok "Version: $VERSION"
+
+# =============================================================================
+# 3 — Write spec
+# =============================================================================
+RPMBUILD="$WORKDIR/rpmbuild"
+mkdir -p "$RPMBUILD"/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+
+cat > "$RPMBUILD/SPECS/plasma-lookandfeel-fedora.spec" <<SPEC
+Name:           plasma-lookandfeel-fedora
+Version:        ${VERSION}
+Release:        1%{?dist}
+Summary:        Empty replacement for plasma-lookandfeel-fedora
+License:        MIT
+BuildArch:      noarch
+
+Provides:       plasma-lookandfeel-fedora = %{version}-%{release}
+
+Obsoletes:      plasma-lookandfeel-fedora < %{version}
+
+%description
+Empty drop-in replacement for plasma-lookandfeel-fedora.
+Satisfies all dependencies without installing any Fedora Plasma theming.
+
+%install
+# intentionally empty
+
+%files
+# intentionally empty
+
+%changelog
+* $(date '+%a %b %d %Y') pkgs-zodium <actions@github.com> - ${VERSION}-1
+- Empty replacement for plasma-lookandfeel-fedora (no Fedora theming)
+SPEC
+
+# =============================================================================
+# 4 — Build
+# =============================================================================
+info "Building RPM..."
+rpmbuild \
+    --define "_topdir $RPMBUILD" \
+    -bb "$RPMBUILD/SPECS/plasma-lookandfeel-fedora.spec" \
+    2>&1
+
+RPM_FILE=$(find "$RPMBUILD/RPMS" -name "plasma-lookandfeel-fedora-*.rpm" | head -1)
+[[ -f "$RPM_FILE" ]] || die "RPM not found after build"
+
+cp "$RPM_FILE" /output/
+ok "RPM ready: /output/$(basename "$RPM_FILE")"
+
+rpm -qp --info "/output/$(basename "$RPM_FILE")"

@@ -1,0 +1,111 @@
+# Lines configured by Zodium Project
+# Do not edit — use ~/.zshrc to override or disable via env vars
+
+# To disable features create a file "/etc/zsh-zodium-overrides"
+# And set values according to the feature you wanna disable.
+# All Possible Values :
+# export DISABLE_ZSH_SYNTAX_HIGHLIGHTING=1
+# export DISABLE_STARSHIP=1
+# export DISABLE_ZOXIDE=1
+# export DISABLE_EZA_ALIASES=1
+# export DISABLE_ZOXIDE_CD=1
+# export DISABLE_FD_ALIAS=1
+# export DISABLE_ZODIUM_ALIASES=1
+# export DISABLE_MODERN_CLI_SUGGESTIONS=1
+# export DISABLE_ZSH_AUTOSUGGESTIONS=1
+# export DISABLE_HOMEBREW=1
+
+# ---- Load user overrides ----
+[[ -f "/etc/zsh-preference" ]] && source "/etc/zsh-zodium-overrides"
+
+# ---- Zsh plugins ----
+
+if [[ -r /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] &&
+   [[ -z "$DISABLE_ZSH_AUTOSUGGESTIONS" ]]; then
+  source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+fi
+
+if [[ -r /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] &&
+   [[ -z "$DISABLE_ZSH_SYNTAX_HIGHLIGHTING" ]]; then
+  source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
+
+# ---- Prompt ----
+
+if command -v starship >/dev/null 2>&1 &&
+   [[ -z "$DISABLE_STARSHIP" ]]; then
+  eval "$(starship init zsh)"
+fi
+
+# ---- Directory jumping ----
+
+if command -v zoxide >/dev/null 2>&1 &&
+   [[ -z "$DISABLE_ZOXIDE" ]]; then
+  eval "$(zoxide init zsh)"
+fi
+
+# ---- CLI Aliases ----
+
+if command -v eza >/dev/null 2>&1 &&
+   [[ -z "$DISABLE_EZA_ALIASES" ]]; then
+  alias ll='eza --all -l --icons --color'
+  alias ls='eza --icons --color'
+  alias lstree='eza --tree --color --icons'
+  alias lstree-all='eza --all --tree --color --icons'
+fi
+
+if command -v zoxide >/dev/null 2>&1 &&
+   [[ -z "$DISABLE_ZOXIDE_CD" ]]; then
+  alias cd='z'
+fi
+
+if command -v fd >/dev/null 2>&1 &&
+   [[ -z "$DISABLE_FD_ALIAS" ]]; then
+  alias find='fd'
+fi
+
+# ---- Zodium Aliases ----
+
+if command -v zoxide >/dev/null 2>&1 &&
+   [[ -z "$DISABLE_ZODIUM_ALIASES" ]]; then
+  alias lns='ln -s'
+  alias top='btop'
+  alias zjust='zrun'
+  alias prime-run='zgpu'
+fi
+
+# ---- Homebrew ----
+
+if [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]] &&
+   [[ -z "$DISABLE_HOMEBREW" ]]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+fi
+
+# ---- Modern CLI suggestions ----
+
+if [[ -o interactive ]] &&
+   [[ -z "$DISABLE_MODERN_CLI_SUGGESTIONS" ]]; then
+
+  autoload -Uz add-zsh-hook
+  typeset -gA _zodium_seen
+
+  _zodium_suggest() {
+    print -P "%F{blue}[zodium]%f Tip: try '$2' instead of '$1'"
+  }
+
+  _zodium_preexec() {
+    local words=(${(z)1})
+    local cmd="${words[1]}"
+    [[ "$cmd" == "sudo" ]] && cmd="${words[2]}"
+
+    case "$cmd" in
+      cat)  command -v bat   >/dev/null 2>&1 && [[ -z ${_zodium_seen[cat]}  ]] && _zodium_suggest cat  bat        && _zodium_seen[cat]=1 ;;
+      grep) command -v rg    >/dev/null 2>&1 && [[ -z ${_zodium_seen[grep]} ]] && _zodium_suggest grep rg         && _zodium_seen[grep]=1 ;;
+      find) command -v fd    >/dev/null 2>&1 && [[ -z ${_zodium_seen[find]} ]] && _zodium_suggest find fd         && _zodium_seen[find]=1 ;;
+      cd)   command -v z     >/dev/null 2>&1 && [[ -z ${_zodium_seen[cd]}   ]] && _zodium_suggest cd   "z (zoxide)" && _zodium_seen[cd]=1 ;;
+      rm)   command -v trash >/dev/null 2>&1 && [[ -z ${_zodium_seen[rm]}   ]] && _zodium_suggest rm   trash      && _zodium_seen[rm]=1 ;;
+    esac
+  }
+
+  add-zsh-hook preexec _zodium_preexec
+fi
