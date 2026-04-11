@@ -1,9 +1,6 @@
 #!/bin/bash
 # =============================================================================
-#  fedora-logos/build.sh
 #  Builds an empty replacement RPM for fedora-logos.
-#  Runs inside a Fedora container.
-#  Output: /output/fedora-logos-*.rpm
 # =============================================================================
 set -euo pipefail
 
@@ -15,13 +12,11 @@ info() { echo "[•] $*"; }
 ok()   { echo "[✓] $*"; }
 die()  { echo "[✗] $*" >&2; exit 1; }
 
-# =============================================================================
 # 1 — Install build dependencies
 # =============================================================================
 info "Installing dependencies..."
 dnf install -y rpm-build --setopt=install_weak_deps=False -q
 
-# =============================================================================
 # 2 — Get version from the real package in the repos
 # =============================================================================
 info "Fetching fedora-logos version..."
@@ -31,7 +26,6 @@ VERSION=$(dnf info fedora-logos 2>/dev/null \
 [[ -n "$VERSION" ]] || die "Could not determine fedora-logos version"
 ok "Version: $VERSION"
 
-# =============================================================================
 # 3 — Write spec
 # =============================================================================
 RPMBUILD="$WORKDIR/rpmbuild"
@@ -42,7 +36,7 @@ Name:           fedora-logos
 Version:        ${VERSION}
 Release:        1%{?dist}
 Summary:        Empty replacement for fedora-logos
-License:        MIT
+License:        MPL-2
 BuildArch:      noarch
 
 # Mirror every Provides from the real package so all dependents are satisfied

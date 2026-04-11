@@ -1,9 +1,6 @@
 #!/bin/bash
 # =============================================================================
-#  plasma-lookandfeel-fedora/build.sh
 #  Builds an empty replacement RPM for plasma-lookandfeel-fedora.
-#  Runs inside a Fedora container.
-#  Output: /output/plasma-lookandfeel-fedora-*.rpm
 # =============================================================================
 set -euo pipefail
 
@@ -15,13 +12,11 @@ info() { echo "[•] $*"; }
 ok()   { echo "[✓] $*"; }
 die()  { echo "[✗] $*" >&2; exit 1; }
 
-# =============================================================================
 # 1 — Install build dependencies
 # =============================================================================
 info "Installing dependencies..."
 dnf install -y rpm-build --setopt=install_weak_deps=False -q
 
-# =============================================================================
 # 2 — Get version from repos (strip epoch if present)
 # =============================================================================
 info "Fetching plasma-lookandfeel-fedora version..."
@@ -34,7 +29,6 @@ VERSION=$(dnf repoquery plasma-lookandfeel-fedora 2>/dev/null \
 [[ -n "$VERSION" ]] || die "Could not determine plasma-lookandfeel-fedora version"
 ok "Version: $VERSION"
 
-# =============================================================================
 # 3 — Write spec
 # =============================================================================
 RPMBUILD="$WORKDIR/rpmbuild"
@@ -45,7 +39,7 @@ Name:           plasma-lookandfeel-fedora
 Version:        ${VERSION}
 Release:        1%{?dist}
 Summary:        Empty replacement for plasma-lookandfeel-fedora
-License:        MIT
+License:        MPL-2
 BuildArch:      noarch
 
 Provides:       plasma-lookandfeel-fedora = %{version}-%{release}
@@ -67,7 +61,6 @@ Satisfies all dependencies without installing any Fedora Plasma theming.
 - Empty replacement for plasma-lookandfeel-fedora (no Fedora theming)
 SPEC
 
-# =============================================================================
 # 4 — Build
 # =============================================================================
 info "Building RPM..."

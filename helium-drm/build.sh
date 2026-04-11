@@ -1,10 +1,6 @@
 #!/bin/bash
 # =============================================================================
 #  helium-drm/build.sh
-#  Runs inside a Fedora container.
-#  Mounts: /build/helium-drm (this script, ro)
-#          /output            (RPM destination)
-#  Env:    HELIUM_VERSION     (passed from workflow)
 # =============================================================================
 set -euo pipefail
 
@@ -16,7 +12,6 @@ info() { echo "[•] $*"; }
 ok()   { echo "[✓] $*"; }
 die()  { echo "[✗] $*" >&2; exit 1; }
 
-# =============================================================================
 # 1 — Install build dependencies + helium-bin from COPR
 # =============================================================================
 info "Installing dependencies..."
@@ -62,7 +57,6 @@ info "Helium install dir: $HELIUM_DIR"
 
 WIDEVINE_TARGET="$HELIUM_DIR/WidevineCdm"
 
-# =============================================================================
 # 3 — Download Chrome, extract WidevineCdm
 # =============================================================================
 info "Fetching latest stable Chrome version..."
@@ -97,7 +91,6 @@ print(m.get('version', 'unknown'))
 ")
 ok "Widevine version: $WIDEVINE_VER"
 
-# =============================================================================
 # 4 — Stage file tree (helium-bin files + WidevineCdm)
 # =============================================================================
 info "Staging file tree..."
@@ -115,7 +108,6 @@ cp -r "$WIDEVINE_SRC/." "$STAGING$WIDEVINE_TARGET/"
 
 ok "Staged $(find "$STAGING" -not -type d | wc -l) files"
 
-# =============================================================================
 # 5 — Generate RPM spec and build
 # =============================================================================
 info "Generating RPM spec..."
@@ -132,21 +124,17 @@ Name:           helium-drm
 Version:        ${INSTALLED_VER}
 Release:        1%{?dist}
 Summary:        Helium browser with Widevine DRM support
-License:        BSD and LGPLv2+ and ASL 2.0
+License:        BSD-3-Clause and GPL-3.0
 URL:            https://github.com/imputnet/helium
 BuildArch:      x86_64
 
 Provides:       helium-bin = %{version}
 Conflicts:      helium-bin
 
-Requires:       gtk3
-Requires:       nss
-Requires:       alsa-lib
-Requires:       libXScrnSaver
-Requires:       at-spi2-atk
+Requires:       vulkan-loader
 
 %description
-Helium browser (Chromium fork) with Widevine CDM bundled in.
+Helium browser with Widevine CDM bundled in.
 Drop-in replacement for helium-bin — no post-install steps needed.
 
 Widevine version: ${WIDEVINE_VER}
@@ -158,10 +146,6 @@ cp -a "${STAGING}/." "%{buildroot}/"
 %files
 $(echo "$DIRS_LIST" | sed 's/^/%dir /')
 $(echo "$FILES_LIST")
-
-%post
-command -v update-desktop-database &>/dev/null \
-    && update-desktop-database -q || true
 
 %changelog
 * $(date '+%a %b %d %Y') pkgs-zodium <actions@github.com> - ${INSTALLED_VER}-1
@@ -177,7 +161,6 @@ rpmbuild \
 RPM_FILE=$(find "$RPMBUILD/RPMS" -name "helium-drm-*.rpm" | head -1)
 [[ -f "$RPM_FILE" ]] || die "RPM not found after build"
 
-# =============================================================================
 # 6 — Copy to /output (picked up by the workflow)
 # =============================================================================
 cp "$RPM_FILE" /output/
