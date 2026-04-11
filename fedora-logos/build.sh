@@ -64,7 +64,6 @@ Satisfies all dependencies without installing any Fedora branding files.
 - Empty replacement for fedora-logos (no branding)
 SPEC
 
-# =============================================================================
 # 4 — Build
 # =============================================================================
 info "Building RPM..."
