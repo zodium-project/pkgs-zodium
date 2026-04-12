@@ -81,13 +81,47 @@ RPM_FILE=$(find ~/rpmbuild/RPMS -name "helium-drm-*.rpm" | head -1)
 [[ -f "$RPM_FILE" ]] || die "RPM not found after rpmrebuild"
 ok "RPM built: $RPM_FILE"
 
-# 7 — Convert RPM to SRPM for COPR
-# rpmrebuild also writes a spec, grab it and build the SRPM from it
-SPEC_FILE=$(find ~/rpmbuild/SPECS -name "helium-drm*.spec" | head -1)
-[[ -f "$SPEC_FILE" ]] || die "Spec not found after rpmrebuild"
-
+# 7 — Produce a minimal SRPM for COPR
 info "Building SRPM..."
-rpmbuild -bs "$SPEC_FILE" \
-    --define "_srcrpmdir $(pwd)" \
-    --define "_sourcedir $(pwd)"
+mkdir -p ~/rpmbuild/{SPECS,SOURCES,SRPMS}
+
+cat > ~/rpmbuild/SPECS/helium-drm.spec <<SPEC
+Name:           helium-drm
+Version:        ${INSTALLED_VER}
+Release:        1%{?dist}
+Summary:        Helium browser with Widevine DRM (Widevine ${WIDEVINE_VER})
+License:        GPL-3.0
+URL:            https://github.com/imputnet/helium-linux
+BuildArch:      x86_64
+Source0:        helium-drm-${INSTALLED_VER}.rpm
+
+Provides:       helium-bin = ${INSTALLED_VER}
+Conflicts:      helium-bin
+
+%description
+Helium browser repackaged with WidevineCdm ${WIDEVINE_VER} for DRM support.
+Widevine is sourced from the official google-chrome-stable RPM (Chrome ${CHROME_VER}).
+
+%prep
+
+%build
+
+%install
+mkdir -p %{buildroot}
+rpm2cpio %{SOURCE0} | cpio -id --quiet -D %{buildroot}
+
+%files
+%{_prefix}/*
+
+%changelog
+* $(date '+%a %b %d %Y') zodium <zodium@localhost> - ${INSTALLED_VER}-1
+- Repackaged helium-bin ${INSTALLED_VER} with WidevineCdm ${WIDEVINE_VER}
+SPEC
+
+# Copy the built RPM as Source0
+cp "$RPM_FILE" ~/rpmbuild/SOURCES/helium-drm-${INSTALLED_VER}.rpm
+
+rpmbuild -bs ~/rpmbuild/SPECS/helium-drm.spec \
+    --define "_srcrpmdir $(pwd)"
+
 ok "SRPM ready"
