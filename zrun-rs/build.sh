@@ -16,7 +16,7 @@ die()  { echo "[✗] $*" >&2; exit 1; }
 # 1 — Install build dependencies
 # =============================================================================
 info "Installing dependencies..."
-dnf install -y rust cargo rpm-build wget musl-gcc musl-devel musl-filesystem musl-libc-static \
+dnf install -y rust rustup cargo rpm-build wget musl-gcc musl-devel musl-filesystem musl-libc-static \
     --setopt=install_weak_deps=False -q
 
 # 2 — Add musl target
