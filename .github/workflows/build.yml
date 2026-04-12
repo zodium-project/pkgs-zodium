@@ -50,6 +50,10 @@ jobs:
           - zodium-settings
           - fedora-logos
           - plasma-lookandfeel-fedora
+          - zfetch-rs
+          - zgpu-rs
+          - zrun-rs
+          - zync-rs
 
     steps:
       - name: Checkout
