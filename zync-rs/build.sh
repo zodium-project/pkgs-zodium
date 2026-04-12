@@ -16,12 +16,14 @@ die()  { echo "[✗] $*" >&2; exit 1; }
 # 1 — Install build dependencies
 # =============================================================================
 info "Installing dependencies..."
-dnf install -y rust rustup cargo rpm-build wget musl-gcc musl-devel musl-filesystem musl-libc-static \
+dnf install -y rustup rpm-build wget musl-gcc musl-devel musl-filesystem musl-libc-static \
     --setopt=install_weak_deps=False -q
 
-# 2 — Add musl target
+# 2 — Setup rustup default profile & add musl target
 # =============================================================================
-info "Adding musl target..."
+info "Setting up rustup..."
+rustup-init -y --default-toolchain stable --profile default
+source "$HOME/.cargo/env"
 rustup target add x86_64-unknown-linux-musl
 
 # 3 — Download source & detect version

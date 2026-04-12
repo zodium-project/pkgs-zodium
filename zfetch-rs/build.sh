@@ -17,7 +17,7 @@ die()  { echo "[✗] $*" >&2; exit 1; }
 # 1 — Install build dependencies
 # =============================================================================
 info "Installing dependencies..."
-dnf install -y rust rustup cargo rpm-build wget --setopt=install_weak_deps=False -q
+dnf install -y rust cargo rpm-build wget --setopt=install_weak_deps=False -q
 
 # 2 — Download source & detect version
 # =============================================================================
