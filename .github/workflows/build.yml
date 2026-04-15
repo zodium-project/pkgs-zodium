@@ -62,8 +62,7 @@ jobs:
           - eza-rs
           - vscode
           - virtio-win
-          - oversteer-udev
-          - ublue-os-udev-rules
+          - udev-rules
           - nvidia-container-toolkit
 
     steps:
