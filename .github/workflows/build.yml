@@ -58,10 +58,7 @@ jobs:
           - zodium-settings
           - fedora-logos
           - plasma-lookandfeel-fedora
-          - zfetch-rs
-          - zgpu-rs
-          - zrun-rs
-          - zync-rs
+          - zutils-rs
           - eza-rs
           - vscode
           - virtio-win
