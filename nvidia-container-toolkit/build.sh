@@ -4,8 +4,8 @@
 # =============================================================================
 set -euo pipefail
 
-SRCDIR="/build/nvidia-container-services"
-WORKDIR="/tmp/nvidia-container-services-build"
+SRCDIR="/build/nvidia-container-toolkit"
+WORKDIR="/tmp/nvidia-container-toolkit-build"
 mkdir -p "$WORKDIR"
 cd "$WORKDIR"
 
