@@ -55,6 +55,7 @@ jobs:
           - helium-drm
           - gui-cli
           - docker-ce
+          - zydm-theme
           - zodium-settings
           - fedora-logos
           - plasma-lookandfeel-fedora
