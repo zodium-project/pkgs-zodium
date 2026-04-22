@@ -1,0 +1,14 @@
+[Unit]
+Description=Add Flatpak Repos
+ConditionPathExists=!/var/lib/flatpak/.zodium-flatpak-added
+Before=flatpak-system-helper.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+ExecStart=/usr/bin/flatpak remote-modify --no-filter --enable flathub
+ExecStartPost=/usr/bin/touch /var/lib/flatpak/.zodium-flatpak-added
+
+[Install]
+WantedBy=multi-user.target
